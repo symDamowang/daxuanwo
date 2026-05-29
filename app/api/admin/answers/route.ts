@@ -7,7 +7,7 @@ export async function GET() {
   if (!user) return json({ error: "Unauthorized" }, { status: 401 });
   if (user.role !== "ADMIN") return json({ error: "Forbidden" }, { status: 403 });
 
-  const rows = many<{
+  const rows = await many<{
     id: string;
     content: string;
     status: string;
@@ -15,7 +15,7 @@ export async function GET() {
     userCode: string;
     promptText: string;
   }>(
-    "SELECT Answer.id, Answer.content, Answer.status, Answer.createdAt, User.code as userCode, Prompt.text as promptText FROM Answer JOIN User ON User.id = Answer.userId JOIN Prompt ON Prompt.id = Answer.promptId ORDER BY Answer.createdAt DESC LIMIT 50"
+    "SELECT Answer.id, Answer.content, Answer.status, Answer.createdAt, User.code as \"userCode\", Prompt.text as \"promptText\" FROM Answer JOIN User ON User.id = Answer.userId JOIN Prompt ON Prompt.id = Answer.promptId ORDER BY Answer.createdAt DESC LIMIT 50"
   );
 
   return json({

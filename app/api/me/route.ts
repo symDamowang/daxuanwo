@@ -6,7 +6,7 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user) return json({ user: null });
 
-  const count = one<{ count: number }>("SELECT COUNT(*) as count FROM Answer WHERE userId = ?", user.id);
+  const count = await one<{ count: number }>("SELECT COUNT(*) as count FROM Answer WHERE userId = ?", user.id);
 
   return json({
     user: {
@@ -24,7 +24,7 @@ export async function PATCH(request: Request) {
 
   const body = (await request.json()) as { email?: string };
   const email = body.email?.trim() || null;
-  run("UPDATE User SET email = ? WHERE id = ?", email, user.id);
+  await run("UPDATE User SET email = ? WHERE id = ?", email, user.id);
 
   return json({ user: { code: user.code, role: user.role, email } });
 }

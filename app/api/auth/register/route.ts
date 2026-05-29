@@ -13,11 +13,11 @@ export async function POST(request: Request) {
   if (!/^[a-z0-9-_.]+$/.test(code)) return badRequest("代号只能使用字母、数字、短横线、下划线或点。");
   if (password.length < 6) return badRequest("进入密钥至少需要 6 个字符。");
 
-  const existing = one("SELECT id FROM User WHERE code = ?", code);
+  const existing = await one("SELECT id FROM User WHERE code = ?", code);
   if (existing) return badRequest("这个代号已经被卷走了。");
 
   const userId = id();
-  run(
+  await run(
     "INSERT INTO User (id, code, passwordHash, email, role, status, createdAt) VALUES (?, ?, ?, ?, 'USER', 'ACTIVE', CURRENT_TIMESTAMP)",
     userId,
     code,

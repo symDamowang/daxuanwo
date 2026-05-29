@@ -12,14 +12,14 @@ export async function POST(request: Request) {
   if (!content || content.length < 2) return badRequest("至少留下一点东西。");
 
   const answerId = id();
-  run(
+  await run(
     "INSERT INTO Answer (id, userId, promptId, content, status, createdAt) VALUES (?, ?, ?, ?, 'NEW', CURRENT_TIMESTAMP)",
     answerId,
     user.id,
     body.promptId,
     content
   );
-  const answer = one("SELECT * FROM Answer WHERE id = ?", answerId);
+  const answer = await one("SELECT * FROM Answer WHERE id = ?", answerId);
 
   return json({ answer });
 }

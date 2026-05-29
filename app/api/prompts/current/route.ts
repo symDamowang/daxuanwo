@@ -6,7 +6,7 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user) return json({ error: "Unauthorized" }, { status: 401 });
 
-  const prompts = many<{ id: string; type: string; text: string; hint: string | null; weight: number }>(
+  const prompts = await many<{ id: string; type: string; text: string; hint: string | null; weight: number }>(
     "SELECT * FROM Prompt WHERE enabled = true"
   );
   if (prompts.length === 0) return json({ prompt: null });

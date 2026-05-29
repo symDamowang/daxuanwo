@@ -7,16 +7,16 @@ export async function GET(_request: Request, context: { params: Promise<{ thread
   if (!user) return json({ error: "Unauthorized" }, { status: 401 });
   const { threadId } = await context.params;
 
-  const member = one("SELECT id FROM ThreadMember WHERE threadId = ? AND userId = ?", threadId, user.id);
+  const member = await one("SELECT id FROM ThreadMember WHERE threadId = ? AND userId = ?", threadId, user.id);
   if (!member && user.role !== "ADMIN") return json({ error: "Forbidden" }, { status: 403 });
 
-  const thread = one<{ id: string; subject: string }>("SELECT * FROM LetterThread WHERE id = ?", threadId);
+  const thread = await one<{ id: string; subject: string }>("SELECT * FROM LetterThread WHERE id = ?", threadId);
 
   if (!thread) return json({ error: "Not found" }, { status: 404 });
   return json({
     thread: {
       ...thread,
-      letters: many("SELECT * FROM Letter WHERE threadId = ? ORDER BY createdAt ASC", threadId),
+      letters: await many("SELECT * FROM Letter WHERE threadId = ? ORDER BY createdAt ASC", threadId),
     },
   });
 }
@@ -30,7 +30,7 @@ export async function POST(request: Request, context: { params: Promise<{ thread
 
   if (!content) return badRequest("回信不能为空。");
 
-  const members = many<{ userId: string }>("SELECT userId FROM ThreadMember WHERE threadId = ?", threadId);
+  const members = await many<{ userId: string }>("SELECT userId FROM ThreadMember WHERE threadId = ?", threadId);
   const isMember = members.some((member) => member.userId === user.id);
   if (!isMember && user.role !== "ADMIN") return json({ error: "Forbidden" }, { status: 403 });
 
@@ -38,7 +38,7 @@ export async function POST(request: Request, context: { params: Promise<{ thread
   if (!recipient) return badRequest("这条信道没有收信人。");
 
   const letterId = id();
-  run(
+  await run(
     "INSERT INTO Letter (id, threadId, recipientId, authorId, identity, body, createdAt) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
     letterId,
     threadId,
@@ -48,8 +48,8 @@ export async function POST(request: Request, context: { params: Promise<{ thread
     content
   );
 
-  run("UPDATE LetterThread SET updatedAt = CURRENT_TIMESTAMP WHERE id = ?", threadId);
+  await run("UPDATE LetterThread SET updatedAt = CURRENT_TIMESTAMP WHERE id = ?", threadId);
 
-  const letter = one("SELECT * FROM Letter WHERE id = ?", letterId);
+  const letter = await one("SELECT * FROM Letter WHERE id = ?", letterId);
   return json({ letter });
 }

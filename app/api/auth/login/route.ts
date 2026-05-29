@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   if (!code || !password) return badRequest("需要代号和进入密钥。");
 
-  const user = one<{
+  const user = await one<{
     id: string;
     code: string;
     passwordHash: string;

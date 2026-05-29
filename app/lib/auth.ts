@@ -9,7 +9,7 @@ export async function createSession(userId: string) {
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + sessionDays * 24 * 60 * 60 * 1000);
 
-  run(
+  await run(
     "INSERT INTO Session (id, token, userId, expiresAt, createdAt) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
     id(),
     token,
@@ -32,7 +32,7 @@ export async function clearSession() {
   const token = store.get(sessionCookie)?.value;
 
   if (token) {
-    run("DELETE FROM Session WHERE token = ?", token);
+    await run("DELETE FROM Session WHERE token = ?", token);
   }
 
   store.delete(sessionCookie);
@@ -44,7 +44,7 @@ export async function getCurrentUser() {
 
   if (!token) return null;
 
-  const session = one<{
+  const session = await one<{
     expiresAt: string;
     id: string;
     code: string;
