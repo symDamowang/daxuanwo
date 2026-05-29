@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(cuid())
+  code         String         @unique
+  passwordHash String
+  email        String?
+  role         Role           @default(USER)
+  status       UserStatus     @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  answers      Answer[]
+  sessions     Session[]
+  received     Letter[]       @relation("ReceivedLetters")
+  authored     Letter[]       @relation("AuthoredLetters")
+  participant  ThreadMember[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Prompt {
+  id        String     @id @default(cuid())
+  type      PromptType
+  text      String     @unique
+  hint      String?
+  enabled   Boolean    @default(true)
+  weight    Int        @default(1)
+  createdAt DateTime   @default(now())
+  answers   Answer[]
+}
+
+model Answer {
+  id        String       @id @default(cuid())
+  userId    String
+  promptId  String
+  content   String
+  status    AnswerStatus @default(NEW)
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt    Prompt       @relation(fields: [promptId], references: [id])
+  threads   LetterThread[]
+}
+
+model LetterThread {
+  id        String         @id @default(cuid())
+  answerId  String?
+  subject   String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  answer    Answer?        @relation(fields: [answerId], references: [id])
+  letters   Letter[]
+  members   ThreadMember[]
+}
+
+model ThreadMember {
+  id       String       @id @default(cuid())
+  threadId String
+  userId   String
+  thread   LetterThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+}
+
+model Letter {
+  id        String       @id @default(cuid())
+  threadId  String
+  recipientId String
+  authorId  String?
+  identity  LetterIdentity
+  body      String
+  readAt    DateTime?
+  createdAt DateTime     @default(now())
+  thread    LetterThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  recipient User         @relation("ReceivedLetters", fields: [recipientId], references: [id], onDelete: Cascade)
+  author    User?        @relation("AuthoredLetters", fields: [authorId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum PromptType {
+  RANKING
+  FEELING
+  FRAGMENT
+  QUESTION
+}
+
+enum AnswerStatus {
+  NEW
+  REPLIED
+  IGNORED
+}
+
+enum LetterIdentity {
+  ECHO
+  FOLLOW_UP
+  MISDELIVERED
+  STRANGER
+  VORTEX
+  NIGHT_WATCHER
+  USER
+}
