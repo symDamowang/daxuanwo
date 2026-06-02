@@ -86,10 +86,24 @@ async function api<T>(url: string, options?: RequestInit): Promise<T> {
     },
   });
 
-  const data = (await response.json()) as T & { error?: string };
-  if (!response.ok) {
-    throw new Error(data.error ?? "水面短暂失灵了。");
+  const text = await response.text();
+  let data: (T & { error?: string }) | null = null;
+  if (text) {
+    try {
+      data = JSON.parse(text) as T & { error?: string };
+    } catch {
+      data = null;
+    }
   }
+
+  if (!response.ok) {
+    throw new Error(data?.error ?? `接口暂时失灵了：HTTP ${response.status}`);
+  }
+
+  if (!data) {
+    throw new Error("接口没有返回有效数据。");
+  }
+
   return data;
 }
 
