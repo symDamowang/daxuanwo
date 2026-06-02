@@ -41,6 +41,13 @@ button {
   cursor: pointer;
 }
 
+button:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .shell {
   position: relative;
   min-height: 100vh;
@@ -170,6 +177,10 @@ span {
   margin: 0 0 12px;
   color: var(--gold);
   letter-spacing: 0;
+}
+
+.soft-note.alert {
+  color: var(--cyan);
 }
 
 .auth-panel,
@@ -368,6 +379,15 @@ select:focus {
   line-height: 1.7;
 }
 
+.empty-note {
+  margin: 0;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: rgba(13, 20, 22, 0.48);
+  padding: 18px;
+  line-height: 1.7;
+}
+
 .signal {
   width: 9px;
   height: 9px;
@@ -442,6 +462,11 @@ select:focus {
 .answer-row em {
   color: var(--gold);
   font-style: normal;
+}
+
+.answer-row.selected-row {
+  border-color: rgba(140, 230, 208, 0.42);
+  background: rgba(140, 230, 208, 0.08);
 }
 
 @keyframes drift {
